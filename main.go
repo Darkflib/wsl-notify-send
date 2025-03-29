@@ -3,9 +3,16 @@ package main
 import (
         "fmt"
         "log"
+        "io"
+	"math/rand"
+	"path/filepath"
+	"strconv"
 
         "github.com/spf13/cobra"
         toast "gopkg.in/toast.v1"
+
+        "net/http"
+	"os"
 )
 
 // Overridden via ldflags
@@ -37,6 +44,23 @@ func main() {
                                 _ = cmd.Usage()
                                 return
                         }
+
+                        random := strconv.Itoa(rand.Intn(100) + 1)
+
+			if len(icon) > 0 && (icon[:7] == "http://" || icon[:8] == "https://") {
+				tmpFolder := os.TempDir()
+
+				err := DownloadFile(icon, filepath.Join(tmpFolder, "wsl-notify-send-icon-tmp"+random+".png"))
+				if err != nil {
+					log.Fatalln(err)
+					icon = ""
+				} else {
+					// had to comment this out because the toast wasn't getting invoked before the file was removed
+					// defer os.Remove("wsl-notify-send-icon-tmp"+random+".png")
+					icon = filepath.Join(tmpFolder, "wsl-notify-send-icon-tmp"+random+".png")
+				}
+			}
+                        
                         notification := &toast.Notification{
                                 AppID:               appID,
                                 Title:               category,
@@ -65,6 +89,30 @@ func main() {
         if err := rootCmd.Execute(); err != nil { //added error handling for rootCmd.Execute()
                 log.Fatalf("Error executing command: %v", err)
         }
+}
+
+func DownloadFile(url string, filepath string) error {
+	// Create the file
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Write the body to file
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // TODO - explore mapping icons: https://wiki.ubuntu.com/NotificationDevelopmentGuidelines#How_do_I_get_these_slick_icons
