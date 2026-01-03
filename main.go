@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/go-toast/toast"
 	"github.com/spf13/cobra"
@@ -16,10 +17,10 @@ import (
 
 // Overridden via ldflags
 var (
-        version   = "99.0.1-devbuild"
-        commit    = "unknown"
-        date      = "unknown"
-        goversion = "unknown"
+	version   = "99.0.1-devbuild"
+	commit    = "unknown"
+	date      = "unknown"
+	goversion = "unknown"
 )
 
 func main() {
@@ -46,7 +47,7 @@ func main() {
 
 			random := strconv.Itoa(rand.Intn(100) + 1)
 
-			if len(icon) > 0 && (icon[:7] == "http://" || icon[:8] == "https://") {
+			if len(icon) > 0 && (strings.HasPrefix(icon, "http://") || strings.HasPrefix(icon, "https://")) {
 				tmpFolder := os.TempDir()
 
 				err := DownloadFile(icon, filepath.Join(tmpFolder, "wsl-notify-send-icon-tmp"+random+".png"))
