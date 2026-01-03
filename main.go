@@ -44,15 +44,17 @@ func main() {
 				return
 			}
 
-			random := strconv.Itoa(rand.Intn(100) + 1)
-
 			if len(icon) > 0 && (icon[:7] == "http://" || icon[:8] == "https://") {
-				tmpFolder := os.TempDir()
-
-				err := DownloadFile(icon, filepath.Join(tmpFolder, "wsl-notify-send-icon-tmp"+random+".png"))
+				tmpFile, err := os.CreateTemp("", "wsl-notify-send-icon-*.png")
 				if err != nil {
 					log.Fatalln(err)
-					icon = ""
+				}
+				tmpFile.Close()
+				err = DownloadFile(icon, tmpFile.Name())
+				if err != nil {
+			if err != nil {
+				log.Fatalln(err)
+			} else {
 				} else {
 					// had to comment this out because the toast wasn't getting invoked before the file was removed
 					// defer os.Remove("wsl-notify-send-icon-tmp"+random+".png")
@@ -91,19 +93,24 @@ func main() {
 }
 
 func DownloadFile(url string, filepath string) error {
-	// Create the file
-	out, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
 	// Get the data
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
+
+	// Ensure we received a successful response before writing to file
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to download file from %s: %s", url, resp.Status)
+	}
+
+	// Create the file
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
 
 	// Write the body to file
 	_, err = io.Copy(out, resp.Body)

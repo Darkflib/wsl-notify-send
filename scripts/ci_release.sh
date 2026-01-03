@@ -27,7 +27,7 @@ export GOVERSION=$(go version)
 
 if [ -z "${PUBLISH}" ]; then
   echo "Running with --skip-publish as PUBLISH not set"
-  goreleaser release --skip-publish --clean
+  goreleaser release --skip=publish --clean
 else
   echo "Publishing release"
   goreleaser release --clean
