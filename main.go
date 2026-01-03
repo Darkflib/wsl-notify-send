@@ -52,8 +52,9 @@ func main() {
 				tmpFile.Close()
 				err = DownloadFile(icon, tmpFile.Name())
 				if err != nil {
-					log.Fatalln(err)
-					icon = ""
+			if err != nil {
+				log.Fatalln(err)
+			} else {
 				} else {
 					// had to comment this out because the toast wasn't getting invoked before the file was removed
 					// defer os.Remove("wsl-notify-send-icon-tmp"+random+".png")
