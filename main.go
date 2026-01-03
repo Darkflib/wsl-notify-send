@@ -53,7 +53,13 @@ func main() {
 				err := DownloadFile(icon, filepath.Join(tmpFolder, "wsl-notify-send-icon-tmp"+random+".png"))
 				if err != nil {
 					log.Fatalln(err)
-					icon = ""
+				}
+				tmpFile.Close()
+				err = DownloadFile(icon, tmpFile.Name())
+				if err != nil {
+			if err != nil {
+				log.Fatalln(err)
+			} else {
 				} else {
 					// had to comment this out because the toast wasn't getting invoked before the file was removed
 					// defer os.Remove("wsl-notify-send-icon-tmp"+random+".png")
@@ -92,19 +98,24 @@ func main() {
 }
 
 func DownloadFile(url string, filepath string) error {
-	// Create the file
-	out, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
 	// Get the data
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
+
+	// Ensure we received a successful response before writing to file
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to download file from %s: %s", url, resp.Status)
+	}
+
+	// Create the file
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
 
 	// Write the body to file
 	_, err = io.Copy(out, resp.Body)
