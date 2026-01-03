@@ -25,5 +25,10 @@ git tag -f v0.1.$BUILD_NUMBER
 
 export GOVERSION=$(go version)
 
-echo "Build release"
-goreleaser release --skip publish --clean
+if [ -z ${PUBLISH} ]; then
+  echo "Running with --skip-publish as PUBLISH not set"
+  goreleaser release --skip-publish --clean
+else
+  echo "Publishing release"
+  goreleaser release --clean
+fi
