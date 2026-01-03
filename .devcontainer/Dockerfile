@@ -62,7 +62,7 @@ RUN \
 # Add goreleaser
 RUN \
     # --> Go releaser 
-    go install github.com/goreleaser/goreleaser/v2@latest
+    go install github.com/goreleaser/goreleaser/v2@v2.13.2
 
 # __DEVCONTAINER_SNIPPET_INSERT__ (control where snippets get inserted using the devcontainer CLI)
 
