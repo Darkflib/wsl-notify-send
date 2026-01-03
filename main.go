@@ -44,12 +44,13 @@ func main() {
 				return
 			}
 
-			random := strconv.Itoa(rand.Intn(100) + 1)
-
 			if len(icon) > 0 && (icon[:7] == "http://" || icon[:8] == "https://") {
-				tmpFolder := os.TempDir()
-
-				err := DownloadFile(icon, filepath.Join(tmpFolder, "wsl-notify-send-icon-tmp"+random+".png"))
+				tmpFile, err := os.CreateTemp("", "wsl-notify-send-icon-*.png")
+				if err != nil {
+					log.Fatalln(err)
+				}
+				tmpFile.Close()
+				err = DownloadFile(icon, tmpFile.Name())
 				if err != nil {
 					log.Fatalln(err)
 					icon = ""
