@@ -4,11 +4,8 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
-	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/go-toast/toast"
@@ -45,25 +42,23 @@ func main() {
 				return
 			}
 
-			random := strconv.Itoa(rand.Intn(100) + 1)
-
 			if len(icon) > 0 && (strings.HasPrefix(icon, "http://") || strings.HasPrefix(icon, "https://")) {
-				tmpFolder := os.TempDir()
-
-				err := DownloadFile(icon, filepath.Join(tmpFolder, "wsl-notify-send-icon-tmp"+random+".png"))
+				tmpFile, err := os.CreateTemp("", "wsl-notify-send-icon-*.png")
 				if err != nil {
-					log.Fatalln(err)
+					log.Fatalf("failed to create temp icon file: %v", err)
 				}
-				tmpFile.Close()
-				err = DownloadFile(icon, tmpFile.Name())
-				if err != nil {
-			if err != nil {
-				log.Fatalln(err)
-			} else {
+
+				tmpFileName := tmpFile.Name()
+				if err := tmpFile.Close(); err != nil {
+					log.Fatalf("failed to close temp icon file %s: %v", tmpFileName, err)
+				}
+
+				if err := DownloadFile(icon, tmpFileName); err != nil {
+					log.Fatalf("failed to download icon from %s: %v", icon, err)
 				} else {
 					// had to comment this out because the toast wasn't getting invoked before the file was removed
-					// defer os.Remove("wsl-notify-send-icon-tmp"+random+".png")
-					icon = filepath.Join(tmpFolder, "wsl-notify-send-icon-tmp"+random+".png")
+					// defer os.Remove(tmpFileName)
+					icon = tmpFileName
 				}
 			}
 
